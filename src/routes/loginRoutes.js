@@ -2,10 +2,14 @@ const express = require('express');
 
 // const { readFileTalker } = require('../indexTalker');
 const generateToken = require('../crypto/generateToken');
+const { validateEmail, validatePassword } = require('../validations/validateLogin');
 
 const loginRoutes = express();
 
-loginRoutes.post('/', async (req, res) => {
+loginRoutes.post('/',
+  validateEmail,
+  validatePassword,
+  async (req, res) => {
   // const { email, password } = req.body;
   const token = generateToken();
   // const getAllTalkerManagers = await readFileTalker();
