@@ -62,9 +62,22 @@ talkerRoutes.put('/:id',
     return talker;
   });
   if (OK === 'yes') {
-    // const updateTalker = { ...getTalkerById, id: Number(id) };
     await writeFileTalker(getTalkerById);
     return res.status(200).json({ ...req.body, id: Number(id) });
+  }
+  return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
+});
+
+talkerRoutes.delete('/:id',
+  validateAuth,
+  async (req, res) => {
+  const { id } = req.params;
+  const getAllTalkerManagers = await readFileTalker();
+  const talkerDeleted = getAllTalkerManagers.findIndex((talker) => talker.id === Number(id));
+  if (talkerDeleted > -1) {
+    getAllTalkerManagers.splice(talkerDeleted, 1);
+    await writeFileTalker(getAllTalkerManagers);
+    return res.sendStatus(204);
   }
   return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
 });
