@@ -1,3 +1,5 @@
+const { readFileTalker } = require('../indexTalker');
+
 const validateAuth = (req, res, next) => {
   const { authorization } = req.headers;
   if ('authorization' in req.headers) {
@@ -48,7 +50,7 @@ const validateRate = (req, res, next) => {
   if ('rate' in req.body.talk || 'rate' in req.query) {
     const valid = [rate > 0, rate < 6, Number.isInteger(rate)];
     return valid.every((i) => i === true) ? next()
-    : res.status(400).json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
+      : res.status(400).json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
   }
   return res.status(400).json(
     { message: 'O campo "rate" é obrigatório' },
@@ -61,11 +63,60 @@ const validateRateQuery = (req, res, next) => {
   if ('rate' in req.query) {
     const valid = [num > 0, num < 6, Number.isInteger(num)];
     return valid.every((i) => i === true) ? next()
-    : res.status(400).json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
+      : res.status(400).json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
   }
   return res.status(400).json(
     { message: 'O campo "rate" é obrigatório' },
   );
+};
+
+const validateDateQuery = async (req, res, next) => {
+  const { date } = req.query;
+  const talkers = await readFileTalker();
+  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+  if (date === '') {
+    res.status(200).json(talkers);
+  } else if (!regex.test(date)) {
+    res.status(400).json({ message: 'O parâmetro "date" deve ter o formato "dd/mm/aaaa"' });
+  } else {
+    next();
+  }
+};
+
+const validateAllQueries = async (req, res, next) => {
+  const { date, q, rate } = req.query;
+  const valid = [['date', 'rate', 'q'], ['date', 'rate']];
+  const talkers = await readFileTalker();
+  let response = '';
+  if (valid[0].every((query) => query in req.query)) {
+    response = talkers.filter(({ name, talk: { rate: num, watchedAt } }) => (
+      date === watchedAt && num >= Number(rate) && name.includes(q)
+    ));
+    res.status(200).json(response);
+  } else if (valid[1].every((query) => query in req.query)) {
+    response = talkers.filter(({ talk: { rate: num, watchedAt } }) => (
+      date === watchedAt && num === Number(rate)
+    ));
+    res.status(200).json(response);
+  } else {
+    next();
+  }
+};
+
+const validateQueries = async (req, res, next) => {
+  const { date, q } = req.query;
+  const valid = [['date', 'q']];
+  const talkers = await readFileTalker();
+  if (valid[0].every((query) => query in req.query)) {
+    const response = talkers.filter(({ name, talk: { watchedAt } }) => (
+      date === watchedAt && name.includes(q)
+    ));
+    res.status(200).json(response);
+  } else if ('date' in req.query) {
+    res.status(200).json(talkers.filter(({ talk }) => talk.watchedAt === date));
+  } else {
+    next();
+  }
 };
 
 module.exports = {
@@ -76,4 +127,7 @@ module.exports = {
   validateWatchAt,
   validateRate,
   validateRateQuery,
+  validateDateQuery,
+  validateAllQueries,
+  validateQueries,
 };
