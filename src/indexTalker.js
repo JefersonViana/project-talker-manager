@@ -8,6 +8,11 @@ const readFileTalker = async () => {
   return Number(response.length) === 0 ? [] : JSON.parse(response);
 };
 
+const writeFileTalker = async (json) => {
+  await fs.writeFile(join(__dirname, PATH), JSON.stringify(json));
+};
+
 module.exports = {
   readFileTalker,
+  writeFileTalker,
 };

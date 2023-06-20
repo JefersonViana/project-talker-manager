@@ -1,6 +1,15 @@
 const express = require('express');
 
-const { readFileTalker } = require('../indexTalker');
+const { readFileTalker, writeFileTalker } = require('../indexTalker');
+
+const {
+  validateAuth,
+  validateName,
+  validateAge,
+  validateTalk,
+  validateWatchAt,
+  validateRate,
+} = require('../validations/validateTalker');
 
 const talkerRoutes = express();
 
@@ -17,8 +26,21 @@ talkerRoutes.get('/:id', async (req, res) => {
   return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
 });
 
-// talkerRoutes.get('/', () => {
-
-// });
+talkerRoutes.post('/',
+  validateAuth,
+  validateName,
+  validateAge,
+  validateTalk,
+  validateWatchAt,
+  validateRate,
+  async (req, res) => {
+  const getAllTalkers = await readFileTalker();
+  getAllTalkers.push({
+    id: getAllTalkers[getAllTalkers.length - 1].id + 1,
+    ...req.body,
+  });
+  await writeFileTalker(getAllTalkers);
+  res.status(201).json(getAllTalkers[getAllTalkers.length - 1]);
+});
 
 module.exports = talkerRoutes;
