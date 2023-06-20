@@ -9,6 +9,7 @@ const {
   validateTalk,
   validateWatchAt,
   validateRate,
+  validateRateQuery,
 } = require('../validations/validateTalker');
 
 const talkerRoutes = express();
@@ -18,11 +19,24 @@ talkerRoutes.get('/', async (req, res) => {
   return res.status(200).json(getAllTalkerManagers);
 });
 
-talkerRoutes.get('/search', validateAuth, async (req, res) => {
-  const { q } = req.query;
+talkerRoutes.get('/search',
+  validateAuth,
+  validateRateQuery,
+  async (req, res) => {
+  const { q, rate } = req.query;
   const getAllTalkerManagers = await readFileTalker();
-  const getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q));
-  return res.status(200).json(getTalkerById);
+  let getTalkerById = '';
+  if (q && rate) {
+    getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q))
+      .filter((talker) => talker.talk.rate >= Number(rate));
+    res.status(200).json(getTalkerById);
+  } else if (!q && rate) {
+    getTalkerById = getAllTalkerManagers.filter((talker) => talker.talk.rate >= Number(rate));
+    res.status(200).json(getTalkerById);
+  } else {
+    getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q));
+    return res.status(200).json(getTalkerById);
+  }
 });
 
 talkerRoutes.get('/:id', async (req, res) => {
