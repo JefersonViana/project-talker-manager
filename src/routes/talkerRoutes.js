@@ -18,6 +18,13 @@ talkerRoutes.get('/', async (req, res) => {
   return res.status(200).json(getAllTalkerManagers);
 });
 
+talkerRoutes.get('/search', validateAuth, async (req, res) => {
+  const { q } = req.query;
+  const getAllTalkerManagers = await readFileTalker();
+  const getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q));
+  return res.status(200).json(getTalkerById);
+});
+
 talkerRoutes.get('/:id', async (req, res) => {
   const { id } = req.params;
   const getAllTalkerManagers = await readFileTalker();
