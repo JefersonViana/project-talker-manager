@@ -22,23 +22,6 @@ talkerRoutes.get('/', async (req, res) => {
   return res.status(200).json(getAllTalkerManagers);
 });
 
-// const caseOne = (arr, query) => {
-//   const { q, rate, date } = query;
-//   return arr.filter(({ name, talk: { rate: num, watchedAt } }) => (
-//     name.includes(q) && rate >= Number(num) && watchedAt === date));
-// };
-
-// const caseTwo = (arr, query) => {
-//   const { q, rate } = query;
-//   return arr.filter(({ name, talk: { rate: num } }) => (
-//     name.includes(q) && rate >= Number(num)
-//   ));
-// };
-
-// const caseThree = (arr, query) => (
-//   arr.filter(({ talk: { watchedAt } }) => watchedAt === query.date)
-// );
-
 talkerRoutes.get('/search',
   validateAuth,
   validateDateQuery,
@@ -61,22 +44,6 @@ talkerRoutes.get('/search',
       return res.status(200).json(getTalkerById);
     }
   });
-
-// // // // // // // // // /// // /// /// // // // // //// // // /// //
-// const { q, rate } = req.query;
-// const getAllTalkerManagers = await readFileTalker();
-// let getTalkerById = '';
-// if (q && rate) {
-//   getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q))
-//     .filter((talker) => talker.talk.rate >= Number(rate));
-//   res.status(200).json(getTalkerById);
-// } else if (!q && rate) {
-//   getTalkerById = getAllTalkerManagers.filter((talker) => talker.talk.rate >= Number(rate));
-//   res.status(200).json(getTalkerById);
-// } else {
-//   getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q));
-//   return res.status(200).json(getTalkerById);
-// }
 
 talkerRoutes.get('/:id', async (req, res) => {
   const { id } = req.params;

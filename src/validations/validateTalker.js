@@ -47,7 +47,19 @@ const validateWatchAt = (req, res, next) => {
 
 const validateRate = (req, res, next) => {
   const { rate } = req.body.talk;
-  if ('rate' in req.body.talk || 'rate' in req.query) {
+  if ('rate' in req.body.talk) {
+    const valid = [rate > 0, rate < 6, Number.isInteger(rate)];
+    return valid.every((i) => i === true) ? next()
+      : res.status(400).json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
+  }
+  return res.status(400).json(
+    { message: 'O campo "rate" é obrigatório' },
+  );
+};
+
+const validateRateBody = (req, res, next) => {
+  const { rate } = req.body;
+  if ('rate' in req.body) {
     const valid = [rate > 0, rate < 6, Number.isInteger(rate)];
     return valid.every((i) => i === true) ? next()
       : res.status(400).json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
@@ -130,4 +142,5 @@ module.exports = {
   validateDateQuery,
   validateAllQueries,
   validateQueries,
+  validateRateBody,
 };
