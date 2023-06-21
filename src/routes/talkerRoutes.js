@@ -14,6 +14,7 @@ const {
   validateAllQueries,
   validateQueries,
 } = require('../validations/validateTalker');
+const getAllTalkersDb = require('../db/talkerDB');
 
 const talkerRoutes = express();
 
@@ -43,7 +44,22 @@ talkerRoutes.get('/search',
       getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q));
       return res.status(200).json(getTalkerById);
     }
-  });
+});
+
+talkerRoutes.get('/db',
+  async (req, res) => {
+    const [results] = await getAllTalkersDb();
+    const updateFormat = results.map((talker) => ({
+      id: talker.id,
+      name: talker.name,
+      age: talker.age,
+      talk: {
+        rate: talker.talk_rate,
+        watchedAt: talker.talk_watched_at,
+      },
+    }));
+    return res.status(200).json(updateFormat);
+});
 
 talkerRoutes.get('/:id', async (req, res) => {
   const { id } = req.params;
