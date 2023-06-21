@@ -69,9 +69,23 @@ const validateRateBody = (req, res, next) => {
   );
 };
 
+const validateAllFalse = (req, res, next) => {
+  const { rate, date, q } = req.query;
+  console.log(q);
+  if (rate === undefined && date === undefined && q === undefined) {
+    res.status(200).json([]);
+  } else {
+    next();
+  }
+};
+
 const validateRateQuery = (req, res, next) => {
   const { rate } = req.query;
   const num = Number(rate);
+  const queries = ['rate', 'date'];
+  if ('q' in req.query && !queries.every((query) => query in req.query)) {
+    return next();
+  }
   if ('rate' in req.query) {
     const valid = [num > 0, num < 6, Number.isInteger(num)];
     return valid.every((i) => i === true) ? next()
@@ -86,9 +100,10 @@ const validateDateQuery = async (req, res, next) => {
   const { date } = req.query;
   const talkers = await readFileTalker();
   const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+  const valid = ['q', 'rate'];
   if (date === '') {
     res.status(200).json(talkers);
-  } else if (!regex.test(date)) {
+  } else if (!regex.test(date) && !valid.every((query) => query in req.query) && date) {
     res.status(400).json({ message: 'O parâmetro "date" deve ter o formato "dd/mm/aaaa"' });
   } else {
     next();
@@ -131,6 +146,22 @@ const validateQueries = async (req, res, next) => {
   }
 };
 
+const validateQAndRate = async (req, res, next) => {
+  const { q, rate } = req.query;
+  const getAllTalkerManagers = await readFileTalker();
+  let getTalkerById = '';
+  if (q && rate) {
+    getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q))
+      .filter((talker) => talker.talk.rate >= Number(rate));
+    res.status(200).json(getTalkerById);
+  } else if (!q && rate) {
+    getTalkerById = getAllTalkerManagers.filter((talker) => talker.talk.rate >= Number(rate));
+    res.status(200).json(getTalkerById);
+  } else {
+    next();
+  }
+};
+
 module.exports = {
   validateAuth,
   validateName,
@@ -143,4 +174,6 @@ module.exports = {
   validateAllQueries,
   validateQueries,
   validateRateBody,
+  validateQAndRate,
+  validateAllFalse,
 };

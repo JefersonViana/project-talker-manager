@@ -13,6 +13,8 @@ const {
   validateDateQuery,
   validateAllQueries,
   validateQueries,
+  validateQAndRate,
+  validateAllFalse,
 } = require('../validations/validateTalker');
 const getAllTalkersDb = require('../db/talkerDB');
 
@@ -28,21 +30,18 @@ talkerRoutes.get('/search',
   validateDateQuery,
   validateAllQueries,
   validateQueries,
+  validateAllFalse,
   validateRateQuery,
+  validateQAndRate,
   async (req, res) => {
-    const { q, rate } = req.query;
+    const { q } = req.query;
     const getAllTalkerManagers = await readFileTalker();
     let getTalkerById = '';
-    if (q && rate) {
-      getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q))
-        .filter((talker) => talker.talk.rate >= Number(rate));
-      res.status(200).json(getTalkerById);
-    } else if (!q && rate) {
-      getTalkerById = getAllTalkerManagers.filter((talker) => talker.talk.rate >= Number(rate));
-      res.status(200).json(getTalkerById);
+    if (q === '') {
+      res.status(200).json(getAllTalkerManagers);
     } else {
       getTalkerById = getAllTalkerManagers.filter((talker) => talker.name.includes(q));
-      return res.status(200).json(getTalkerById);
+      res.status(200).json(getTalkerById);
     }
 });
 
